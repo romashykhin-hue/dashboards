@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд простоїв виробництва</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        header {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 20px;
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .date-info {
+            color: #666;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .content {
+            flex: 1;
+            overflow: auto;
+            margin-top: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            flex-shrink: 0;
+            width: 100%;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            flex: 2;
+            min-height: 0;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .chart-container h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+        }
+
+        canvas {
+            max-height: 100%;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: auto auto 1fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .filter-section h3 {
+            color: #333;
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        select, input {
+            padding: 6px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .table-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .table-container h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            flex: 1;
+            overflow: auto;
+        }
+
+        table thead {
+            background: #f3f4f6;
+            position: sticky;
+            top: 0;
+        }
+
+        table th {
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        table td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #666;
+        }
+
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 11px;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 1400px) {
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .metrics-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>📊 Дашборд простоїв виробництва</h1>
+                <span class="date-info">Оновлено: <span id="updateTime">--:--</span></span>
+            </div>
+            <div class="nav-buttons">
+                <button class="nav-btn active" disabled>📊 Виробництво</button>
+                <a href="dashboard_employees.html" class="nav-btn">👥 Співробітники</a>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <h3>🔍 Період:</h3>
+            <select id="monthFilter" onchange="updateDashboard()"></select>
+            <select id="reasonFilter" onchange="updateDashboard()"></select>
+            <select id="operatorFilter" onchange="updateDashboard()"></select>
+            <select id="operationFilter" onchange="updateDashboard()"></select>
+            <button onclick="resetFilters()">🔄 Очистити</button>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Всього пауз</div>
+                <div class="metric-value" id="totalPauses">0</div>
+                <div class="metric-unit">записів</div>
+            </div>
+            <div class="metric-card orange">
+                <div class="metric-label">Загальний час</div>
+                <div class="metric-value" id="totalTime">0</div>
+                <div class="metric-unit">годин</div>
+            </div>
+            <div class="metric-card green">
+                <div class="metric-label">Середній час</div>
+                <div class="metric-value" id="avgTime">0</div>
+                <div class="metric-unit">хвилин</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="chart-container" style="grid-column: 1 / -1;">
+                <h3>📅 Динаміка простоїв</h3>
+                <div class="chart-wrapper">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-grid">
+            <div class="chart-container">
+                <h3>📋 Причини простоїв</h3>
+                <div class="chart-wrapper">
+                    <canvas id="reasonChart"></canvas>
+                </div>
+            </div>
+            <div class="table-container">
+                <h3>👥 Відповідальні</h3>
+                <table id="operatorTable">
+                    <thead>
+                        <tr>
+                            <th>Оператор</th>
+                            <th>Кількість</th>
+                            <th>Загальна тривал. (хв)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="operatorTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Дашборд оновлюється кожні 5 хвилин | Дані з Google Sheets</p>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let timelineChart, reasonChart;
+
+        // URL вашего Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby183ZFnWZOLnFrDJgSiDXhvQpVu1LY6SALZzGgXEUU8cYAMJtyERYFH_EBSJXgvea3/exec';
+
+        // Завантажуємо дані при завантаженні сторінки
+        window.addEventListener('load', () => {
+            loadData();
+            setInterval(loadData, 5 * 60 * 1000); // Оновлюємо кожні 5 хвилин
+        });
+
+        async function loadData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                allData = data;
+                updateDashboard();
+                updateTime();
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                loadSampleData();
+                updateDashboard();
+            }
+        }
+
+        function loadSampleData() {
+            allData = [
+                {
+                    product: 'TR 01.10.0 СБ Трап в сборе',
+                    route: '1009',
+                    operator: 'Антонюк Валерій Адамович',
+                    operation: 'Заготівельна зачистка E2',
+                    reason: 'Відсутні комплектуючі',
+                    startTime: '13.10.2025 9:09',
+                    endTime: '13.10.2025 10:09',
+                    durationSec: 3600,
+                    durationMin: 60,
+                    durationHour: 1,
+                    month: 10,
+                    monthYear: '2025-10',
+                    date: '13'
+                },
+                {
+                    product: 'TR 01.10.0 СБ Трап в сборе',
+                    route: '1009',
+                    operator: 'Архангельський Олег Миколайович',
+                    operation: 'Заготівельна зачистка E2',
+                    reason: 'Відсутні комплектуючі',
+                    startTime: '13.10.2025 9:09',
+                    endTime: '13.10.2025 10:09',
+                    durationSec: 3600,
+                    durationMin: 60,
+                    durationHour: 1,
+                    month: 10,
+                    monthYear: '2025-10',
+                    date: '13'
+                },
+                {
+                    product: 'TR 01.10.0 СБ Трап в сборе',
+                    route: '1009',
+                    operator: 'Архангельський Олег Миколайович',
+                    operation: 'Заготівельна зачистка E2',
+                    reason: 'Відсутні комплектуючі',
+                    startTime: '10.10.2025 9:09',
+                    endTime: '10.10.2025 10:09',
+                    durationSec: 3600,
+                    durationMin: 60,
+                    durationHour: 1,
+                    month: 10,
+                    monthYear: '2025-10',
+                    date: '10'
+                }
+            ];
+        }
+
+        function updateDashboard() {
+            const filteredData = getFilteredData();
+
+            // Оновлюємо метрики
+            updateMetrics(filteredData);
+
+            // Оновлюємо графіки
+            updateCharts(filteredData);
+
+            // Оновлюємо таблицю
+            updateOperatorTable(filteredData);
+
+            // Оновлюємо фільтри
+            updateFilterOptions();
+        }
+
+        function getFilteredData() {
+            const monthFilter = document.getElementById('monthFilter').value;
+            const reasonFilter = document.getElementById('reasonFilter').value;
+            const operatorFilter = document.getElementById('operatorFilter').value;
+            const operationFilter = document.getElementById('operationFilter').value;
+
+            return allData.filter(item => {
+                if (monthFilter && item.monthYear !== monthFilter) return false;
+                if (reasonFilter && item.reason !== reasonFilter) return false;
+                if (operatorFilter && item.operator !== operatorFilter) return false;
+                if (operationFilter && item.operation !== operationFilter) return false;
+                return true;
+            });
+        }
+
+        function updateMetrics(data) {
+            const totalPauses = data.length;
+            const totalTimeHours = data.reduce((sum, item) => sum + item.durationHour, 0);
+            const avgTimeMin = data.length > 0 ? Math.round(data.reduce((sum, item) => sum + item.durationMin, 0) / data.length * 10) / 10 : 0;
+
+            document.getElementById('totalPauses').textContent = totalPauses;
+            document.getElementById('totalTime').textContent = (Math.round(totalTimeHours * 10) / 10).toFixed(1);
+            document.getElementById('avgTime').textContent = avgTimeMin;
+        }
+
+        function updateCharts(data) {
+            // Графік динаміки по датах
+            const dateStats = {};
+            data.forEach(item => {
+                const key = item.startTime.split(' ')[0];
+                dateStats[key] = (dateStats[key] || 0) + item.durationHour;
+            });
+
+            const sortedDates = Object.keys(dateStats).sort();
+
+            if (timelineChart) timelineChart.destroy();
+            timelineChart = new Chart(document.getElementById('timelineChart'), {
+                type: 'line',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Години простою',
+                        data: sortedDates.map(date => dateStats[date]),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Графік по причинам
+            const reasonStats = {};
+            data.forEach(item => {
+                reasonStats[item.reason] = (reasonStats[item.reason] || 0) + item.durationHour;
+            });
+
+            if (reasonChart) reasonChart.destroy();
+            reasonChart = new Chart(document.getElementById('reasonChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(reasonStats),
+                    datasets: [{
+                        data: Object.values(reasonStats),
+                        backgroundColor: ['#667eea', '#f97316', '#10b981', '#ef4444', '#8b5cf6']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        function updateOperatorTable(data) {
+            const operatorStats = {};
+            data.forEach(item => {
+                if (!operatorStats[item.operator]) {
+                    operatorStats[item.operator] = { count: 0, duration: 0 };
+                }
+                operatorStats[item.operator].count += 1;
+                operatorStats[item.operator].duration += item.durationMin;
+            });
+
+            const tbody = document.getElementById('operatorTableBody');
+            tbody.innerHTML = '';
+
+            const sorted = Object.entries(operatorStats)
+                .sort((a, b) => b[1].duration - a[1].duration);
+
+            sorted.forEach(([operator, stats]) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${operator}</td>
+                    <td>${stats.count}</td>
+                    <td>${Math.round(stats.duration)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateFilterOptions() {
+            const months = [...new Set(allData.map(item => item.monthYear))].sort().reverse();
+            const reasons = [...new Set(allData.map(item => item.reason))];
+            const operators = [...new Set(allData.map(item => item.operator))];
+            const operations = [...new Set(allData.map(item => item.operation))];
+
+            updateSelect('monthFilter', months, 'Всі періоди');
+            updateSelect('reasonFilter', reasons, 'Всі причини');
+            updateSelect('operatorFilter', operators, 'Всі оператори');
+            updateSelect('operationFilter', operations, 'Всі операції');
+        }
+
+        function updateSelect(selectId, options, placeholder) {
+            const select = document.getElementById(selectId);
+            const currentValue = select.value;
+
+            select.innerHTML = '';
+            
+            const allOpt = document.createElement('option');
+            allOpt.value = '';
+            allOpt.textContent = placeholder;
+            select.appendChild(allOpt);
+
+            options.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option;
+                opt.textContent = option;
+                select.appendChild(opt);
+            });
+
+            select.value = currentValue;
+        }
+
+        function resetFilters() {
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('reasonFilter').value = '';
+            document.getElementById('operatorFilter').value = '';
+            document.getElementById('operationFilter').value = '';
+            updateDashboard();
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('uk-UA');
+            document.getElementById('updateTime').textContent = time;
+        }
+    </script>
+</body>
+</html>

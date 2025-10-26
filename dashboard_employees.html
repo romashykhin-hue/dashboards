@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд сотрудников</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        header {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 20px;
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .date-info {
+            color: #666;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 0.6fr 1.2fr 1.2fr;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-top: 12px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .changes-block {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .changes-block h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .change-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+            font-size: 11px;
+            line-height: 1.3;
+        }
+
+        .change-item.positive {
+            color: #10b981;
+        }
+
+        .change-item.negative {
+            color: #ef4444;
+        }
+
+        .change-item:last-child {
+            border-bottom: none;
+        }
+
+        .division-block {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #f97316;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .changes-block-inline {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #10b981;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .division-block h3,
+        .changes-block-inline h3 {
+            color: #333;
+            margin: 0 0 8px 0;
+            font-size: 12px;
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .division-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        .division-table th,
+        .division-table td {
+            padding: 4px 6px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .division-table th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .division-table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .division-table td:last-child {
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #667eea;
+        }
+
+        .metric-card.orange {
+            border-left-color: #f97316;
+        }
+
+        .metric-card.green {
+            border-left-color: #10b981;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+            margin-top: 12px;
+        }
+
+        .table-container {
+            background: white;
+            padding: 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+            grid-column: 1 / -1;
+            max-height: 400px;
+            overflow: hidden;
+        }
+
+        .table-container h3 {
+            color: #333;
+            margin: 0;
+            font-size: 14px;
+            border-bottom: 2px solid #667eea;
+            padding: 15px 15px 8px 15px;
+            flex-shrink: 0;
+        }
+
+        .table-container > div {
+            overflow-y: auto;
+            flex: 1;
+            padding: 0 15px 15px 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            flex: 1;
+        }
+
+        table thead {
+            background: #f3f4f6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        table th {
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        table td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #666;
+        }
+
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .footer {
+            text-align: center;
+            color: white;
+            font-size: 11px;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 1400px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>👥 Дашборд сотрудников</h1>
+                <span class="date-info">Оновлено: <span id="updateTime">--:--</span></span>
+            </div>
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="nav-btn">📊 Виробництво</a>
+                <button class="nav-btn active" disabled>👥 Співробітники</button>
+            </div>
+        </header>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Всього співробітників</div>
+                <div class="metric-value" id="totalEmployees">0</div>
+                <div class="metric-unit">осіб</div>
+            </div>
+            <div class="division-block">
+                <h3>📊 Середня категорія по дільницям</h3>
+                <table class="division-table" id="divisionTable">
+                    <thead>
+                        <tr>
+                            <th>Дільниця</th>
+                            <th>Категорія</th>
+                        </tr>
+                    </thead>
+                    <tbody id="divisionTableBody">
+                    </tbody>
+                </table>
+            </div>
+            <div class="changes-block-inline">
+                <h3>📝 Зміни за період</h3>
+                <div id="changesContainer">
+                    <div class="change-item">Немає змін</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-grid" style="display: none;">
+        </div>
+
+        <div class="table-container">
+            <h3>👤 Список всіх сотрудників</h3>
+            <div style="overflow-y: auto; flex: 1;">
+                <table id="employeeTable">
+                    <thead>
+                        <tr>
+                            <th>№</th>
+                            <th>ПІБ</th>
+                            <th>Посада</th>
+                            <th>Категорія</th>
+                            <th>Дільниця</th>
+                            <th>Зміна</th>
+                        </tr>
+                    </thead>
+                    <tbody id="employeeTableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Дашборд оновлюється кожні 5 хвилин | Дані з Google Sheets</p>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+
+        // URL вашого Apps Script з параметром листа
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzf_zg9fiuy_ZhFbkZLGyHyH-5bQfGL4LOKifg10Fkx-LK8hbdaTIX9m4rF6cycAq9f/exec?sheet=Лист2';
+
+        // Завантажуємо дані при завантаженні сторінки
+        window.addEventListener('load', () => {
+            loadData();
+            setInterval(loadData, 5 * 60 * 1000); // Оновлюємо кожні 5 хвилин
+        });
+
+        async function loadData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Помилка:', data.error);
+                    loadSampleData();
+                } else {
+                    allData = data;
+                }
+                
+                updateDashboard();
+                updateTime();
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                loadSampleData();
+                updateDashboard();
+            }
+        }
+
+        function loadSampleData() {
+            allData = [
+                { number: 1, name: 'Приклад Сотрудник', position: 'Посада', category: 3, change: 1, division: 'Дільниця 1' },
+                { number: 2, name: 'Тестовий Користувач', position: 'Посада', category: 2, change: 0, division: 'Дільниця 2' }
+            ];
+        }
+
+        function updateDashboard() {
+            updateMetrics();
+            updateDivisionAverages();
+            updateTable();
+            updateChanges();
+        }
+
+        function updateMetrics() {
+            const totalEmployees = allData.length;
+            document.getElementById('totalEmployees').textContent = totalEmployees;
+        }
+
+        function updateDivisionAverages() {
+            const divisionStats = {};
+
+            // Собираем статистику по дільницям
+            allData.forEach(emp => {
+                const division = emp.division || 'Без дільниці';
+                const category = emp.category ? parseInt(emp.category) : 0;
+
+                if (!divisionStats[division]) {
+                    divisionStats[division] = { sum: 0, count: 0 };
+                }
+
+                divisionStats[division].sum += category;
+                divisionStats[division].count += 1;
+            });
+
+            // Вычисляем среднее
+            const divisionAverages = {};
+            Object.keys(divisionStats).forEach(division => {
+                const avg = (divisionStats[division].sum / divisionStats[division].count).toFixed(2);
+                divisionAverages[division] = parseFloat(avg);
+            });
+
+            // Выводим в таблицу
+            const tbody = document.getElementById('divisionTableBody');
+            tbody.innerHTML = '';
+
+            Object.entries(divisionAverages)
+                .sort((a, b) => b[1] - a[1])
+                .forEach(([division, avg]) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${division}</td>
+                        <td>${avg}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+        }
+
+        function updateChanges() {
+            const changesContainer = document.getElementById('changesContainer');
+            changesContainer.innerHTML = '';
+
+            let changes = [];
+
+            allData.forEach(emp => {
+                if (emp.change === 1) {
+                    changes.push({
+                        name: emp.name,
+                        type: 'positive',
+                        text: `${emp.name} підвищив категорію`
+                    });
+                } else if (emp.change === -1) {
+                    changes.push({
+                        name: emp.name,
+                        type: 'negative',
+                        text: `${emp.name} понизив категорію`
+                    });
+                }
+            });
+
+            if (changes.length === 0) {
+                changesContainer.innerHTML = '<div class="change-item">Немає змін</div>';
+            } else {
+                changes.forEach(change => {
+                    const div = document.createElement('div');
+                    div.className = `change-item ${change.type}`;
+                    div.textContent = change.text;
+                    changesContainer.appendChild(div);
+                });
+            }
+        }
+
+        function updateTable() {
+            const tbody = document.getElementById('employeeTableBody');
+            tbody.innerHTML = '';
+
+            allData.forEach(emp => {
+                const row = document.createElement('tr');
+                
+                let changeText = '-';
+                if (emp.change === 1) {
+                    changeText = '↑ Підвищення';
+                } else if (emp.change === -1) {
+                    changeText = '↓ Пониження';
+                }
+                
+                row.innerHTML = `
+                    <td>${emp.number}</td>
+                    <td>${emp.name}</td>
+                    <td>${emp.position}</td>
+                    <td>${emp.category || '-'}</td>
+                    <td>${emp.division || '-'}</td>
+                    <td>${changeText}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('uk-UA');
+            document.getElementById('updateTime').textContent = time;
+        }
+    </script>
+</body>
+</html>
