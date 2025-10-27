@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд відхилень</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            min-height: 100vh;
+            padding: 15px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        header {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 20px;
+        }
+
+        .date-info {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: 2px solid #ef4444;
+            background: white;
+            color: #ef4444;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #ef4444;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #ef4444;
+            color: white;
+        }
+
+        .filter-section {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: grid;
+            grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+            flex-shrink: 0;
+            margin-bottom: 12px;
+        }
+
+        .filter-section h3 {
+            color: #333;
+            margin: 0;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        select, input {
+            padding: 6px 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+        }
+
+        button {
+            background: #ef4444;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #dc2626;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            flex-shrink: 0;
+            margin-bottom: 12px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #ef4444;
+        }
+
+        .metric-label {
+            color: #666;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .metric-unit {
+            font-size: 11px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 320px;
+        }
+
+        .chart-container h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #ef4444;
+            padding-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        .chart-wrapper {
+            flex: 1;
+            min-height: 280px;
+            position: relative;
+        }
+
+.table-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .table-container h3 {
+            color: #333;
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #ef4444;
+            padding-bottom: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+        }
+
+        table thead {
+            background: #f3f4f6;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        table th {
+            padding: 8px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        table td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #666;
+        }
+
+        table td:first-child {
+            font-size: 10px;
+            max-width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        table td img {
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        table td img:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        table tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .photo-link {
+            color: #ef4444;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .photo-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1400px) {
+            .charts-row {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .chart-container {
+                min-height: 280px;
+            }
+
+            .chart-wrapper {
+                min-height: 240px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .filter-section {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .gallery {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h1>🔴 Дашборд відхилень</h1>
+                <span class="date-info">Оновлено: <span id="updateTime">--:--</span></span>
+            </div>
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="nav-btn">📊 Виробництво</a>
+                <a href="dashboard_employees.html" class="nav-btn">👥 Співробітники</a>
+                <button class="nav-btn active" disabled>🔴 Відхилення</button>
+                <a href="dashboard_safety.html" class="nav-btn">🛡️ ОП</a>
+            </div>
+        </header>
+
+        <div class="filter-section">
+            <h3>🔍 Фільтри:</h3>
+            <select id="yearFilter" onchange="updateDashboard()">
+                <option value="">Всі роки</option>
+            </select>
+            <select id="monthFilter" onchange="updateDashboard()">
+                <option value="">Всі періоди</option>
+            </select>
+            <select id="sectionFilter" onchange="updateDashboard()">
+                <option value="">Всі участки</option>
+            </select>
+            <select id="typeFilter" onchange="updateDashboard()">
+                <option value="">Всі типи</option>
+                <option value="defects">Тільки рекламації</option>
+                <option value="internal">Тільки внутрішні зауваження</option>
+            </select>
+            <button onclick="resetFilters()">🔄 Очистити</button>
+        </div>
+
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="metric-label">Всього відхилень</div>
+                <div class="metric-value" id="totalDefects">0</div>
+                <div class="metric-unit">одиниць</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Всього рекламацій</div>
+                <div class="metric-value" id="totalReclamations">0</div>
+                <div class="metric-unit">одиниць</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Всього Втрат</div>
+                <div class="metric-value" id="totalLosses">0</div>
+                <div class="metric-unit">грн</div>
+            </div>
+        </div>
+
+        <div class="charts-row">
+            <div class="chart-container">
+                <h3>🏆 ТОП-5 продуктів по відхиленням</h3>
+                <div class="chart-wrapper">
+                    <canvas id="productChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>🏭 Розподіл по участкам</h3>
+                <div class="chart-wrapper">
+                    <canvas id="sectionChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-container">
+                <h3>📊 Рекламації vs Внутрішні зауваження</h3>
+                <div class="chart-wrapper">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-container" style="margin-top: 12px;">
+            <h3>📋 Детальна інформація</h3>
+            <table id="detailsTable">
+                <thead>
+                    <tr>
+                        <th>Дата</th>
+                        <th>Місяць</th>
+                        <th>Продукт</th>
+                        <th>Участок</th>
+                        <th>Фото</th>
+                    </tr>
+                </thead>
+                <tbody id="detailsTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        let allData = [];
+        let productChart, sectionChart, comparisonChart;
+
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxkvrIUi4j-wZD9FbAZ2uFyHm0ZpGVRxi4VqVS_yQo2h1KQHm3VXJC2tOXuYnOANs/exec?sheet=ОТК';
+
+        window.addEventListener('load', () => {
+            loadData();
+            setInterval(loadData, 5 * 60 * 1000);
+        });
+
+        async function loadData() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                
+                if (data.error) {
+                    console.error('Помилка:', data.error);
+                } else {
+                    allData = data;
+                }
+                
+                updateDashboard();
+                updateTime();
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+
+        function updateDashboard() {
+            const filteredData = getFilteredData();
+            updateMetrics(filteredData);
+            updateCharts(filteredData);
+            updateTable(filteredData);
+            updateFilterOptions();
+        }
+
+        function getFilteredData() {
+            const yearFilter = document.getElementById('yearFilter').value;
+            const monthFilter = document.getElementById('monthFilter').value;
+            const sectionFilter = document.getElementById('sectionFilter').value;
+            const typeFilter = document.getElementById('typeFilter').value;
+
+            return allData.filter(item => {
+                if (yearFilter && item.yearNum !== yearFilter) return false;
+                if (monthFilter && item.month !== monthFilter) return false;
+                if (sectionFilter && item.section !== sectionFilter) return false;
+                if (typeFilter === 'defects' && item.defects === 0) return false;
+                if (typeFilter === 'internal' && item.internal === 0) return false;
+                return true;
+            });
+        }
+
+        function updateMetrics(data) {
+            const totalDefects = data.reduce((sum, item) => sum + item.defects, 0);
+            const totalInternal = data.reduce((sum, item) => sum + item.internal, 0);
+            const totalLosses = data.reduce((sum, item) => sum + item.losses, 0);
+
+            document.getElementById('totalDefects').textContent = totalDefects;
+            document.getElementById('totalReclamations').textContent = totalInternal;
+            document.getElementById('totalLosses').textContent = totalLosses.toLocaleString('uk-UA');
+        }
+
+        function updateCharts(data) {
+            // ТОП продуктів
+            const productLosses = {};
+            data.forEach(item => {
+                productLosses[item.product] = (productLosses[item.product] || 0) + item.defects;
+            });
+
+            const topProducts = Object.entries(productLosses)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            if (productChart) productChart.destroy();
+            productChart = new Chart(document.getElementById('productChart'), {
+                type: 'bar',
+                data: {
+                    labels: topProducts.map(item => item[0].substring(0, 25)),
+                    datasets: [{
+                        label: 'Кількість',
+                        data: topProducts.map(item => item[1]),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Розподіл по участкам
+            const sectionLosses = {};
+            data.forEach(item => {
+                sectionLosses[item.section] = (sectionLosses[item.section] || 0) + item.defects;
+            });
+
+            if (sectionChart) sectionChart.destroy();
+            sectionChart = new Chart(document.getElementById('sectionChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(sectionLosses),
+                    datasets: [{
+                        data: Object.values(sectionLosses),
+                        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#06b6d4']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+                }
+            });
+
+            // Рекламації vs Внутрішні
+            const monthComparison = {};
+            data.forEach(item => {
+                const key = item.month || 'Без місяця';
+                if (!monthComparison[key]) {
+                    monthComparison[key] = { defects: 0, internal: 0 };
+                }
+                monthComparison[key].defects += item.defects;
+                monthComparison[key].internal += item.internal;
+            });
+
+            if (comparisonChart) comparisonChart.destroy();
+            comparisonChart = new Chart(document.getElementById('comparisonChart'), {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(monthComparison),
+                    datasets: [
+                        {
+                            label: 'Рекламації',
+                            data: Object.values(monthComparison).map(item => item.defects),
+                            backgroundColor: '#ef4444',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Внутр. зауваження',
+                            data: Object.values(monthComparison).map(item => item.internal),
+                            backgroundColor: '#f97316',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        function updateTable(data) {
+            const tbody = document.getElementById('detailsTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                let photoCell = '-';
+                
+                if (item.photo && item.photo.trim() && item.photo !== 'undefined') {
+                    let photoUrl = item.photo.trim();
+                    console.log('Photo URL:', photoUrl);
+                    
+                    // Перетворюємо посилання на Google Drive для вбудовування
+                    if (photoUrl.includes('drive.google.com')) {
+                        const fileId = photoUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
+                        if (fileId && fileId[1]) {
+                            const thumbUrl = `https://drive.google.com/thumbnail?id=${fileId[1]}&sz=w100`;
+                            photoCell = `<a href="${photoUrl}" target="_blank" style="color: #ef4444; text-decoration: none; display: inline-block;">
+                                <img src="${thumbUrl}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect fill=%22%23e5e7eb%22 width=%2250%22 height=%2250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22%3E❌%3C/text%3E%3C/svg%3E'">
+                            </a>`;
+                        }
+                    } else {
+                        photoCell = `<a href="${photoUrl}" target="_blank" class="photo-link">📷</a>`;
+                    }
+                }
+                
+                row.innerHTML = `
+                    <td>${item.date}</td>
+                    <td>${item.month}</td>
+                    <td>${item.product}</td>
+                    <td>${item.section}</td>
+                    <td style="text-align: center;">${photoCell}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateFilterOptions() {
+            const years = [...new Set(allData.map(item => item.yearNum).filter(y => y && y.toString().length === 4))].sort().reverse();
+            const months = [...new Set(allData.map(item => item.month).filter(m => m))];
+            const sections = [...new Set(allData.map(item => item.section))];
+
+            console.log('Years found:', years);
+            console.log('All data sample:', allData.slice(0, 3));
+
+            updateSelect('yearFilter', years.map(y => ({ value: y, label: y })), 'Всі роки');
+            updateSelect('monthFilter', months.map(m => ({ value: m, label: m })), 'Всі періоди');
+            updateSelect('sectionFilter', sections.map(s => ({ value: s, label: s })), 'Всі участки');
+        }
+
+        function updateSelect(selectId, options, placeholder) {
+            const select = document.getElementById(selectId);
+            const currentValue = select.value;
+
+            select.innerHTML = '';
+            
+            const allOpt = document.createElement('option');
+            allOpt.value = '';
+            allOpt.textContent = placeholder;
+            select.appendChild(allOpt);
+
+            options.forEach(opt => {
+                const option = document.createElement('option');
+                option.value = opt.value;
+                option.textContent = opt.label;
+                select.appendChild(option);
+            });
+
+            select.value = currentValue;
+        }
+
+        function resetFilters() {
+            document.getElementById('yearFilter').value = '';
+            document.getElementById('monthFilter').value = '';
+            document.getElementById('sectionFilter').value = '';
+            document.getElementById('typeFilter').value = '';
+            updateDashboard();
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('uk-UA');
+            document.getElementById('updateTime').textContent = time;
+        }
+    </script>
+</body>
+</html>

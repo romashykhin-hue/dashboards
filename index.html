@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборди аналітики</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 14px;
+        }
+
+        .dashboards {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border: 2px solid #f0f0f0;
+            border-radius: 12px;
+            padding: 24px;
+            text-decoration: none;
+            color: #333;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .dashboard-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .dashboard-card.production {
+            border-color: #667eea;
+        }
+
+        .dashboard-card.production:hover {
+            border-color: #5568d3;
+        }
+
+        .dashboard-card.employees {
+            border-color: #10b981;
+        }
+
+        .dashboard-card.employees:hover {
+            border-color: #059669;
+        }
+
+        .dashboard-card.defects {
+            border-color: #ef4444;
+        }
+
+        .dashboard-card.defects:hover {
+            border-color: #dc2626;
+        }
+
+        .dashboard-card.safety {
+            border-color: #10b981;
+        }
+
+        .dashboard-card.safety:hover {
+            border-color: #059669;
+        }
+
+        .card-icon {
+            font-size: 32px;
+            min-width: 40px;
+        }
+
+        .card-content h3 {
+            margin-bottom: 4px;
+            font-size: 16px;
+        }
+
+        .card-content p {
+            color: #666;
+            font-size: 12px;
+        }
+
+        @media (max-width: 640px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .dashboard-card {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Дашборди аналітики</h1>
+        <p class="subtitle">Виберіть дашборд для перегляду</p>
+
+        <div class="dashboards">
+            <a href="dashboard.html" class="dashboard-card production">
+                <div class="card-icon">📊</div>
+                <div class="card-content">
+                    <h3>Виробництво</h3>
+                    <p>Аналіз простоїв та динаміка по датах</p>
+                </div>
+            </a>
+
+            <a href="dashboard_employees.html" class="dashboard-card employees">
+                <div class="card-icon">👥</div>
+                <div class="card-content">
+                    <h3>Співробітники</h3>
+                    <p>Інформація про персонал і зміни категорій</p>
+                </div>
+            </a>
+
+            <a href="dashboard_defects.html" class="dashboard-card defects">
+                <div class="card-icon">🔴</div>
+                <div class="card-content">
+                    <h3>Браки</h3>
+                    <p>Аналіз браків, рекламацій та потерь</p>
+                </div>
+            </a>
+
+            <a href="dashboard_safety.html" class="dashboard-card safety">
+                <div class="card-icon">🛡️</div>
+                <div class="card-content">
+                    <h3>Охорона праці</h3>
+                    <p>Днів без нещасних випадків та форми ОТ</p>
+                </div>
+            </a>
