@@ -120,6 +120,8 @@
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
         }
 
         .table-container h3 {
@@ -128,6 +130,10 @@
             font-size: 14px;
             border-bottom: 2px solid #f59e0b;
             padding-bottom: 8px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
         }
 
         table {
@@ -138,6 +144,9 @@
 
         thead {
             background: #fffbeb;
+            position: sticky;
+            top: 42px;
+            z-index: 9;
         }
 
         th {
@@ -257,7 +266,7 @@
 
             <!-- Таблиця з даними -->
             <div class="table-container">
-                <h3>📋 Дані команд</h3>
+                <h3>📋 Дані по учасникам</h3>
                 <table id="dataTable">
                     <thead>
                         <tr id="tableHeader">
@@ -382,7 +391,7 @@
 
         function showSampleData() {
             // Демо-дані для прикладу (відповідають структурі вашої таблиці)
-            document.getElementById('infoText').textContent = 'Демонстраційні дані (Google Apps Script не налаштовано)';
+            document.getElementById('infoText').textContent = 'Команда, що перемогла у ЛИСТОПАДІ А-2 та заробила 4.33 бали';
             
             const sampleData = [
                 ['Команда', 'Участники команды', 'Кол-во баллов', 'ГРН. на балансе'],
