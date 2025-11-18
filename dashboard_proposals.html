@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Дашборд Подані пропозиції</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 15px;
+            margin: 0;
+            overflow: auto;
+        }
+
+        .container {
+            max-width: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        header {
+            background: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 8px 16px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #8b5cf6;
+            color: white;
+            border-color: #8b5cf6;
+        }
+
+        h1 {
+            color: #333;
+            margin: 0;
+            font-size: 20px;
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .header-icon {
+            font-size: 28px;
+        }
+
+        .date-info {
+            color: #666;
+            font-size: 12px;
+            display: inline-block;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stats-block {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid #8b5cf6;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #8b5cf6;
+        }
+
+        .table-container {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .table-container h3 {
+            color: #333;
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            border-bottom: 2px solid #8b5cf6;
+            padding-bottom: 8px;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        thead {
+            background: #f5f3ff;
+            position: sticky;
+            top: 42px;
+            z-index: 9;
+        }
+
+        th {
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #c4b5fd;
+        }
+
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+            vertical-align: top;
+        }
+
+        tr:hover {
+            background: #f5f3ff;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+        tbody tr:nth-child(even):hover {
+            background: #f5f3ff;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-review {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .description-cell {
+            max-width: 400px;
+            word-wrap: break-word;
+            white-space: normal;
+            line-height: 1.4;
+        }
+
+        .loading {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .nav-buttons {
+                justify-content: center;
+            }
+
+            h1 {
+                font-size: 16px;
+            }
+
+            .stats-block {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            table {
+                font-size: 10px;
+            }
+
+            th, td {
+                padding: 6px;
+            }
+
+            .description-cell {
+                max-width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <div class="header-icon">💡</div>
+                <div>
+                    <h1>Подані пропозиції</h1>
+                    <span class="date-info">Оновлено: <span id="updateTime">--:--</span></span>
+                </div>
+            </div>
+            <div class="nav-buttons">
+                <a href="dashboard.html" class="nav-btn">📊 Виробництво</a>
+                <a href="dashboard_employees.html" class="nav-btn">👥 Співробітники</a>
+                <a href="dashboard_defects.html" class="nav-btn">🔴 Відхилення</a>
+                <a href="dashboard_safety.html" class="nav-btn">🛡️ ОП</a>
+                <a href="dashboard_power.html" class="nav-btn">🏆 Команди</a>
+                <a href="dashboard_announcements.html" class="nav-btn">📢 Оголошення</a>
+                <button class="nav-btn active" disabled>💡 Пропозиції</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <!-- Блок статистики -->
+            <div class="stats-block">
+                <div class="stat-item">
+                    <div class="stat-label">Всього пропозицій</div>
+                    <div class="stat-value" id="totalProposals">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">На розгляді</div>
+                    <div class="stat-value" id="reviewProposals">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Затверджено</div>
+                    <div class="stat-value" id="approvedProposals">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Цього місяця</div>
+                    <div class="stat-value" id="monthProposals">0</div>
+                </div>
+            </div>
+
+            <!-- Таблиця з даними -->
+            <div class="table-container">
+                <h3>📋 Список пропозицій</h3>
+                <table id="dataTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <th>Завантаження...</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="100%" style="text-align: center; padding: 20px;">
+                                Завантаження даних...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // URL Google Apps Script для отримання даних
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+
+        window.addEventListener('load', () => {
+            loadData();
+            setInterval(loadData, 5 * 60 * 1000); // Оновлюємо кожні 5 хвилин
+            updateTime();
+            setInterval(updateTime, 1000);
+        });
+
+        async function loadData() {
+            try {
+                console.log('📊 Завантаження даних...');
+                
+                // JSONP для обходу CORS
+                return new Promise((resolve, reject) => {
+                    const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
+                    
+                    window[callbackName] = function(data) {
+                        console.log('✅ Дані отримано:', data);
+                        
+                        if (data.error) {
+                            console.error('❌ Помилка:', data.error);
+                            showError();
+                        } else {
+                            updateTable(data.tableData);
+                            updateStats(data.tableData);
+                        }
+                        
+                        delete window[callbackName];
+                        resolve();
+                    };
+                    
+                    const script = document.createElement('script');
+                    script.src = SCRIPT_URL + '?action=getProposalsData&callback=' + callbackName;
+                    script.onerror = function() {
+                        console.error('❌ Помилка завантаження');
+                        delete window[callbackName];
+                        showSampleData(); // Показуємо демо-дані при помилці
+                        reject();
+                    };
+                    document.head.appendChild(script);
+                });
+            } catch (error) {
+                console.error('❌ Помилка:', error);
+                showSampleData();
+            }
+        }
+
+        function updateTable(tableData) {
+            if (!tableData || tableData.length === 0) {
+                showError();
+                return;
+            }
+
+            // Перший рядок - це заголовки
+            const headers = tableData[0];
+            const rows = tableData.slice(1);
+
+            // Оновлюємо заголовки
+            const headerRow = document.getElementById('tableHeader');
+            headerRow.innerHTML = '';
+            headers.forEach((header, index) => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                // Робимо опис ширшим
+                if (index === 3) {
+                    th.style.width = '40%';
+                }
+                headerRow.appendChild(th);
+            });
+
+            // Оновлюємо дані
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            rows.forEach(row => {
+                // Пропускаємо порожні рядки
+                if (!row.some(cell => cell !== null && cell !== '')) {
+                    return;
+                }
+
+                const tr = document.createElement('tr');
+                row.forEach((cell, index) => {
+                    const td = document.createElement('td');
+                    
+                    // Статус - додаємо стилізований badge
+                    if (index === 4 && cell) {
+                        const badge = document.createElement('span');
+                        badge.className = 'status-badge';
+                        badge.textContent = cell;
+                        
+                        // Визначаємо клас в залежності від статусу
+                        const statusText = cell.toString().toUpperCase();
+                        if (statusText.includes('РОЗГЛЯД')) {
+                            badge.classList.add('status-review');
+                        } else if (statusText.includes('ЗАТВЕРД') || statusText.includes('ПРИЙНЯТ')) {
+                            badge.classList.add('status-approved');
+                        } else if (statusText.includes('ВІДХИЛ') || statusText.includes('ВІДМОВ')) {
+                            badge.classList.add('status-rejected');
+                        } else if (statusText.includes('ВИКОНАН')) {
+                            badge.classList.add('status-completed');
+                        }
+                        
+                        td.appendChild(badge);
+                    }
+                    // Опис - додаємо спеціальний клас
+                    else if (index === 3) {
+                        td.className = 'description-cell';
+                        td.textContent = cell;
+                    }
+                    // Інші поля
+                    else {
+                        td.textContent = cell;
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+        }
+
+        function updateStats(tableData) {
+            if (!tableData || tableData.length <= 1) {
+                return;
+            }
+
+            const rows = tableData.slice(1); // Пропускаємо заголовки
+            const validRows = rows.filter(row => row.some(cell => cell !== null && cell !== ''));
+            
+            // Загальна кількість
+            document.getElementById('totalProposals').textContent = validRows.length;
+
+            // На розгляді
+            const reviewCount = validRows.filter(row => {
+                const status = row[4] ? row[4].toString().toUpperCase() : '';
+                return status.includes('РОЗГЛЯД');
+            }).length;
+            document.getElementById('reviewProposals').textContent = reviewCount;
+
+            // Затверджено
+            const approvedCount = validRows.filter(row => {
+                const status = row[4] ? row[4].toString().toUpperCase() : '';
+                return status.includes('ЗАТВЕРД') || status.includes('ПРИЙНЯТ') || status.includes('ВИКОНАН');
+            }).length;
+            document.getElementById('approvedProposals').textContent = approvedCount;
+
+            // За поточний місяць
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const monthCount = validRows.filter(row => {
+                const dateStr = row[0] ? row[0].toString() : '';
+                if (dateStr) {
+                    // Парсимо дату (формат: 24.10.25)
+                    const parts = dateStr.split('.');
+                    if (parts.length === 3) {
+                        const month = parseInt(parts[1]) - 1; // Місяці в JS від 0
+                        const year = 2000 + parseInt(parts[2]); // Додаємо 2000 до року
+                        return month === currentMonth && year === currentYear;
+                    }
+                }
+                return false;
+            }).length;
+            document.getElementById('monthProposals').textContent = monthCount;
+        }
+
+        function showError() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '<tr><td colspan="100%" style="text-align: center; padding: 20px; color: #ef4444;">Не вдалося завантажити дані</td></tr>';
+        }
+
+        function showSampleData() {
+            // Демо-дані для прикладу
+            const sampleData = [
+                ['Дата подання пропозиції', 'ПІБ працівника/майстра', 'Ділянка', 'Опис поданої пропозиції', 'Статус'],
+                ['24.10.25', 'Гладкий Є.В.', 'А1', 'На кузові Еридон при відкривані бокового борта ручка замка падає вертикально вниз та пошкоджує БЗУ та колесу', 'НА РОЗГЛЯДІ'],
+                ['27.10.25', 'Гладкий Є.В.', 'А1', 'Евакуатор 706. В надрамнике невозможно обварить поперечины', 'НА РОЗГЛЯДІ']
+            ];
+            
+            updateTable(sampleData);
+            updateStats(sampleData);
+        }
+
+        function updateTime() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('uk-UA', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            document.getElementById('updateTime').textContent = time;
+        }
+    </script>
+</body>
+</html>
