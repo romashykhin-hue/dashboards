@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Дашборд відхилень</title>
+    <title>Система обліку операційних показників - Аналіз ОТК</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
@@ -14,29 +14,27 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            background: #f5f5f5;
             min-height: 100vh;
             padding: 15px;
-            overflow-x: hidden;
         }
 
         .container {
-            max-width: 100%;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         header {
             background: white;
-            padding: 12px 20px;
+            padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            flex-shrink: 0;
+            margin-bottom: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .header-left {
@@ -45,20 +43,24 @@
             gap: 15px;
         }
 
-        h1 {
-            color: #333;
-            margin: 0;
+        .logo {
+            background: #FFD700;
+            padding: 5px 15px;
+            border-radius: 8px;
+            font-weight: bold;
             font-size: 20px;
+            color: #000;
         }
 
-        .date-info {
-            color: #666;
-            font-size: 12px;
+        h1 {
+            font-size: 22px;
+            color: #333;
         }
 
         .nav-buttons {
             display: flex;
             gap: 8px;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
@@ -84,226 +86,203 @@
             color: white;
         }
 
-        .filter-section {
+        .filters-section {
             background: white;
-            padding: 12px 15px;
+            padding: 15px 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: grid;
-            grid-template-columns: auto 1fr 1fr 1fr 1fr auto;
-            gap: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            gap: 15px;
             align-items: center;
-            flex-shrink: 0;
-            margin-bottom: 12px;
+            flex-wrap: wrap;
         }
 
-        .filter-section h3 {
-            color: #333;
-            margin: 0;
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
             font-size: 12px;
+            color: #666;
             font-weight: 600;
-            white-space: nowrap;
         }
 
-        select, input {
-            padding: 6px 10px;
-            border: 1px solid #e5e7eb;
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 13px;
+            min-width: 150px;
+            cursor: pointer;
         }
 
-        select:focus, input:focus {
+        select:focus {
             outline: none;
             border-color: #ef4444;
-            box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
         }
 
-        button {
+        button.reset-btn {
+            padding: 8px 16px;
             background: #ef4444;
             color: white;
-            padding: 6px 12px;
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 12px;
-            transition: background 0.3s ease;
-            white-space: nowrap;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.3s;
+            margin-top: 20px;
         }
 
-        button:hover {
+        button.reset-btn:hover {
             background: #dc2626;
         }
 
         .metrics-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            flex-shrink: 0;
-            margin-bottom: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .metric-card {
             background: white;
-            padding: 10px 12px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            border-left: 4px solid #ef4444;
+            text-align: center;
+        }
+
+        .metric-card.highlight {
+            background: #FFF9E6;
+            border: 2px solid #FFD700;
         }
 
         .metric-label {
+            font-size: 12px;
             color: #666;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
         .metric-value {
-            font-size: 20px;
+            font-size: 28px;
             font-weight: bold;
             color: #333;
         }
 
-        .metric-unit {
-            font-size: 11px;
-            color: #999;
-            margin-top: 2px;
+        .metric-card.highlight .metric-value {
+            color: #000;
         }
 
-        .charts-row {
+        .metric-unit {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .charts-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 12px;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
         }
 
         .chart-container {
             background: white;
-            padding: 15px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            min-height: 320px;
         }
 
-        .chart-container h3 {
-            color: #333;
-            margin: 0 0 10px 0;
+        .chart-container.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .chart-title {
             font-size: 14px;
-            border-bottom: 2px solid #ef4444;
-            padding-bottom: 8px;
-            flex-shrink: 0;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
         }
 
         .chart-wrapper {
-            flex: 1;
-            min-height: 280px;
             position: relative;
+            height: 350px;
         }
 
-.table-container {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            max-height: 400px;
-            overflow-y: auto;
+        .chart-wrapper.tall {
+            height: 500px;
         }
 
-        .table-container h3 {
-            color: #333;
-            margin: 0 0 15px 0;
-            font-size: 14px;
-            border-bottom: 2px solid #ef4444;
-            padding-bottom: 8px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        .legend-custom {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
             font-size: 11px;
         }
 
-        table thead {
-            background: #f3f4f6;
-            position: sticky;
-            top: 0;
-            z-index: 10;
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
 
-        table th {
-            padding: 8px;
-            text-align: left;
-            font-weight: 600;
-            color: #333;
-            border-bottom: 2px solid #e5e7eb;
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
         }
 
-        table td {
-            padding: 8px;
-            border-bottom: 1px solid #e5e7eb;
+        .loading {
+            text-align: center;
+            padding: 40px;
             color: #666;
         }
 
-        table td:first-child {
-            font-size: 10px;
-            max-width: 80px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        table td img {
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        table td img:hover {
-            transform: scale(1.1);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        table tbody tr:hover {
-            background: #f9fafb;
-        }
-
-        .photo-link {
-            color: #ef4444;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .photo-link:hover {
-            text-decoration: underline;
-        }
-
-        @media (max-width: 1400px) {
-            .charts-row {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .chart-container {
-                min-height: 280px;
-            }
-
-            .chart-wrapper {
-                min-height: 240px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .filter-section {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .charts-row {
+        @media (max-width: 1024px) {
+            .charts-grid {
                 grid-template-columns: 1fr;
             }
 
-            .gallery {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            h1 {
+                font-size: 16px;
+            }
+
+            .logo {
+                font-size: 16px;
+                padding: 5px 10px;
+            }
+
+            .filters-section {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metric-value {
+                font-size: 20px;
+            }
+
+            .nav-buttons {
+                justify-content: center;
             }
         }
     </style>
@@ -312,331 +291,416 @@
     <div class="container">
         <header>
             <div class="header-left">
-                <h1>🔴 Дашборд відхилень</h1>
-                <span class="date-info">Оновлено: <span id="updateTime">--:--</span></span>
+                <div class="logo">DLIGHT</div>
+                <h1>Система обліку операційних показників</h1>
             </div>
             <div class="nav-buttons">
                 <a href="dashboard.html" class="nav-btn">📊 Виробництво</a>
                 <a href="dashboard_employees.html" class="nav-btn">👥 Співробітники</a>
                 <button class="nav-btn active" disabled>🔴 Відхилення</button>
                 <a href="dashboard_safety.html" class="nav-btn">🛡️ ОП</a>
+                <a href="dashboard_power.html" class="nav-btn">🏆 Команди</a>
+                <a href="dashboard_announcements.html" class="nav-btn">📢 Оголошення</a>
+                <a href="dashboard_proposals.html" class="nav-btn">💡 Пропозиції</a>
             </div>
         </header>
 
-        <div class="filter-section">
-            <h3>🔍 Фільтри:</h3>
-            <select id="yearFilter" onchange="updateDashboard()">
-                <option value="">Всі роки</option>
-            </select>
-            <select id="monthFilter" onchange="updateDashboard()">
-                <option value="">Всі періоди</option>
-            </select>
-            <select id="sectionFilter" onchange="updateDashboard()">
-                <option value="">Всі участки</option>
-            </select>
-            <select id="typeFilter" onchange="updateDashboard()">
-                <option value="">Всі типи</option>
-                <option value="defects">Тільки рекламації</option>
-                <option value="internal">Тільки внутрішні зауваження</option>
-            </select>
-            <button onclick="resetFilters()">🔄 Очистити</button>
+        <!-- Фільтри -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <label>Участок на котором возникла брака</label>
+                <select id="filterLocation">
+                    <option value="">Всі ділянки</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Місяць</label>
+                <select id="filterMonth">
+                    <option value="">Всі місяці</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Продукт</label>
+                <select id="filterProduct">
+                    <option value="">Всі продукти</option>
+                </select>
+            </div>
+            <button class="reset-btn" onclick="resetFilters()">Скинути фільтри</button>
         </div>
 
+        <!-- Метрики -->
         <div class="metrics-grid">
             <div class="metric-card">
-                <div class="metric-label">Всього відхилень</div>
-                <div class="metric-value" id="totalDefects">0</div>
-                <div class="metric-unit">одиниць</div>
+                <div class="metric-label">Загальна кількість браку, шт</div>
+                <div class="metric-value" id="metricTotalDefects">0</div>
             </div>
             <div class="metric-card">
-                <div class="metric-label">Всього рекламацій</div>
-                <div class="metric-value" id="totalReclamations">0</div>
-                <div class="metric-unit">одиниць</div>
+                <div class="metric-label">Виправлено на виробництві, шт</div>
+                <div class="metric-value" id="metricFixed">0</div>
             </div>
             <div class="metric-card">
-                <div class="metric-label">Всього Втрат</div>
-                <div class="metric-value" id="totalLosses">0</div>
-                <div class="metric-unit">грн</div>
+                <div class="metric-label">Відправлено з браком, шт</div>
+                <div class="metric-value" id="metricSent">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Витрати на усунення, грн</div>
+                <div class="metric-value" id="metricCost">0</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-label">Вартість деталі, грн</div>
+                <div class="metric-value" id="metricPartCost">0</div>
+            </div>
+            <div class="metric-card highlight">
+                <div class="metric-label">Итого потерь, грн</div>
+                <div class="metric-value" id="metricTotalLoss">0</div>
             </div>
         </div>
 
-        <div class="charts-row">
-            <div class="chart-container">
-                <h3>🏆 ТОП-5 продуктів по відхиленням</h3>
+        <!-- Графіки -->
+        <div class="charts-grid">
+            <!-- Браки по ділянках -->
+            <div class="chart-container full-width">
+                <div class="chart-title">Кількість браку по ділянках</div>
                 <div class="chart-wrapper">
-                    <canvas id="productChart"></canvas>
+                    <canvas id="defectsByLocationChart"></canvas>
                 </div>
             </div>
+
+            <!-- Діаграма по ділянкам -->
             <div class="chart-container">
-                <h3>🏭 Розподіл по участкам</h3>
+                <div class="chart-title">Розподіл браків по ділянкам</div>
                 <div class="chart-wrapper">
-                    <canvas id="sectionChart"></canvas>
+                    <canvas id="defectsPieChart"></canvas>
                 </div>
+                <div class="legend-custom" id="pieLegend"></div>
             </div>
+
+            <!-- Браки по продуктам -->
             <div class="chart-container">
-                <h3>📊 Рекламації vs Внутрішні зауваження</h3>
-                <div class="chart-wrapper">
-                    <canvas id="comparisonChart"></canvas>
+                <div class="chart-title">ТОП-15 продуктів з браком</div>
+                <div class="chart-wrapper tall">
+                    <canvas id="defectsByProductChart"></canvas>
                 </div>
             </div>
         </div>
 
-        <div class="table-container" style="margin-top: 12px;">
-            <h3>📋 Детальна інформація</h3>
-            <table id="detailsTable">
-                <thead>
-                    <tr>
-                        <th>Дата</th>
-                        <th>Місяць</th>
-                        <th>Продукт</th>
-                        <th>Участок</th>
-                        <th>Фото</th>
-                    </tr>
-                </thead>
-                <tbody id="detailsTableBody">
-                </tbody>
-            </table>
-        </div>
+        <div class="loading" id="loadingIndicator">Завантаження даних...</div>
     </div>
 
     <script>
-        let allData = [];
-        let productChart, sectionChart, comparisonChart;
+        // URL Google Apps Script
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
 
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxxkvrIUi4j-wZD9FbAZ2uFyHm0ZpGVRxi4VqVS_yQo2h1KQHm3VXJC2tOXuYnOANs/exec?sheet=ОТК';
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+
+        // Індекси стовпців (відповідно до скріншоту)
+        const COLUMNS = {
+            DATE: 0,          // Дата
+            MONTH: 1,         // Місяць
+            QUARTER: 2,       // Квартал
+            YEAR: 3,          // Рік
+            PRODUCT: 4,       // Продукт на котором возникла брака
+            LOCATION: 5,      // Участок на котором возникла брака
+            QUANTITY: 6,      // Кількість виявленого браку
+            FIXED: 8,         // Виправили в компанії
+            SENT: 9,          // Затраты на устранения на бране (желтый столбец)
+            COST: 13,         // Стоимость работ по дефекту
+            PART_COST: 14,    // Вартість деталі
+            TOTAL_LOSS: 17    // Общие потери
+        };
 
         window.addEventListener('load', () => {
             loadData();
-            setInterval(loadData, 5 * 60 * 1000);
         });
 
         async function loadData() {
             try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
+                console.log('📊 Завантаження даних...');
                 
-                if (data.error) {
-                    console.error('Помилка:', data.error);
-                } else {
-                    allData = data;
-                }
-                
-                updateDashboard();
-                updateTime();
+                return new Promise((resolve, reject) => {
+                    const callbackName = 'jsonpCallback_' + Math.random().toString(36).substr(2, 9);
+                    
+                    window[callbackName] = function(data) {
+                        console.log('✅ Дані отримано:', data);
+                        
+                        if (data.error) {
+                            console.error('❌ Помилка:', data.error);
+                            showError();
+                        } else {
+                            allData = data.data || [];
+                            filteredData = [...allData];
+                            updateDashboard();
+                            populateFilters();
+                            document.getElementById('loadingIndicator').style.display = 'none';
+                        }
+                        
+                        delete window[callbackName];
+                        resolve();
+                    };
+                    
+                    const script = document.createElement('script');
+                    script.src = SCRIPT_URL + '?action=getDefectsData&callback=' + callbackName;
+                    script.onerror = function() {
+                        console.error('❌ Помилка завантаження');
+                        delete window[callbackName];
+                        showError();
+                        reject();
+                    };
+                    document.head.appendChild(script);
+                });
             } catch (error) {
-                console.error('Ошибка загрузки:', error);
+                console.error('❌ Помилка:', error);
+                showError();
             }
         }
 
-        function updateDashboard() {
-            const filteredData = getFilteredData();
-            updateMetrics(filteredData);
-            updateCharts(filteredData);
-            updateTable(filteredData);
-            updateFilterOptions();
+        function showError() {
+            document.getElementById('loadingIndicator').innerHTML = '❌ Помилка завантаження даних. Перевірте налаштування Google Apps Script.';
         }
 
-        function getFilteredData() {
-            const yearFilter = document.getElementById('yearFilter').value;
-            const monthFilter = document.getElementById('monthFilter').value;
-            const sectionFilter = document.getElementById('sectionFilter').value;
-            const typeFilter = document.getElementById('typeFilter').value;
+        function populateFilters() {
+            // Заповнюємо фільтр ділянок
+            const locations = [...new Set(allData.map(row => row[COLUMNS.LOCATION]).filter(val => val))];
+            const locationSelect = document.getElementById('filterLocation');
+            locationSelect.innerHTML = '<option value="">Всі ділянки</option>';
+            locations.forEach(loc => {
+                const option = document.createElement('option');
+                option.value = loc;
+                option.textContent = loc;
+                locationSelect.appendChild(option);
+            });
 
-            return allData.filter(item => {
-                if (yearFilter && item.yearNum !== yearFilter) return false;
-                if (monthFilter && item.month !== monthFilter) return false;
-                if (sectionFilter && item.section !== sectionFilter) return false;
-                if (typeFilter === 'defects' && item.defects === 0) return false;
-                if (typeFilter === 'internal' && item.internal === 0) return false;
+            // Заповнюємо фільтр місяців
+            const months = [...new Set(allData.map(row => row[COLUMNS.MONTH]).filter(val => val))];
+            const monthSelect = document.getElementById('filterMonth');
+            monthSelect.innerHTML = '<option value="">Всі місяці</option>';
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+
+            // Заповнюємо фільтр продуктів
+            const products = [...new Set(allData.map(row => row[COLUMNS.PRODUCT]).filter(val => val))];
+            const productSelect = document.getElementById('filterProduct');
+            productSelect.innerHTML = '<option value="">Всі продукти</option>';
+            products.forEach(prod => {
+                const option = document.createElement('option');
+                option.value = prod;
+                option.textContent = prod;
+                productSelect.appendChild(option);
+            });
+
+            // Додаємо обробники подій
+            document.querySelectorAll('select').forEach(select => {
+                select.addEventListener('change', applyFilters);
+            });
+        }
+
+        function applyFilters() {
+            const locationFilter = document.getElementById('filterLocation').value;
+            const monthFilter = document.getElementById('filterMonth').value;
+            const productFilter = document.getElementById('filterProduct').value;
+
+            filteredData = allData.filter(row => {
+                if (locationFilter && row[COLUMNS.LOCATION] !== locationFilter) return false;
+                if (monthFilter && row[COLUMNS.MONTH] !== monthFilter) return false;
+                if (productFilter && row[COLUMNS.PRODUCT] !== productFilter) return false;
                 return true;
             });
+
+            updateDashboard();
         }
 
-        function updateMetrics(data) {
-            const totalDefects = data.reduce((sum, item) => sum + item.defects, 0);
-            const totalInternal = data.reduce((sum, item) => sum + item.internal, 0);
-            const totalLosses = data.reduce((sum, item) => sum + item.losses, 0);
-
-            document.getElementById('totalDefects').textContent = totalDefects;
-            document.getElementById('totalReclamations').textContent = totalInternal;
-            document.getElementById('totalLosses').textContent = totalLosses.toLocaleString('uk-UA');
+        function resetFilters() {
+            document.getElementById('filterLocation').value = '';
+            document.getElementById('filterMonth').value = '';
+            document.getElementById('filterProduct').value = '';
+            filteredData = [...allData];
+            updateDashboard();
         }
 
-        function updateCharts(data) {
-            // ТОП продуктів
-            const productLosses = {};
-            data.forEach(item => {
-                productLosses[item.product] = (productLosses[item.product] || 0) + item.defects;
+        function updateDashboard() {
+            // Розраховуємо метрики
+            let totalDefects = 0;
+            let totalFixed = 0;
+            let totalSent = 0;
+            let totalCost = 0;
+            let totalPartCost = 0;
+            let totalLoss = 0;
+
+            filteredData.forEach(row => {
+                totalDefects += parseFloat(row[COLUMNS.QUANTITY]) || 0;
+                totalFixed += parseFloat(row[COLUMNS.FIXED]) || 0;
+                totalSent += parseFloat(row[COLUMNS.SENT]) || 0;
+                totalCost += parseFloat(row[COLUMNS.COST]) || 0;
+                totalPartCost += parseFloat(row[COLUMNS.PART_COST]) || 0;
+                totalLoss += parseFloat(row[COLUMNS.TOTAL_LOSS]) || 0;
             });
 
-            const topProducts = Object.entries(productLosses)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 5);
+            // Оновлюємо метрики
+            document.getElementById('metricTotalDefects').textContent = Math.round(totalDefects).toLocaleString();
+            document.getElementById('metricFixed').textContent = Math.round(totalFixed).toLocaleString();
+            document.getElementById('metricSent').textContent = Math.round(totalSent).toLocaleString();
+            document.getElementById('metricCost').textContent = Math.round(totalCost).toLocaleString();
+            document.getElementById('metricPartCost').textContent = Math.round(totalPartCost).toLocaleString();
+            document.getElementById('metricTotalLoss').textContent = Math.round(totalLoss).toLocaleString();
 
-            if (productChart) productChart.destroy();
-            productChart = new Chart(document.getElementById('productChart'), {
+            // Оновлюємо графіки
+            updateCharts();
+        }
+
+        function updateCharts() {
+            updateDefectsByLocationChart();
+            updateDefectsPieChart();
+            updateDefectsByProductChart();
+        }
+
+        function updateDefectsByLocationChart() {
+            const locationStats = {};
+            
+            filteredData.forEach(row => {
+                const location = row[COLUMNS.LOCATION];
+                if (!location) return;
+                
+                if (!locationStats[location]) {
+                    locationStats[location] = { defects: 0 };
+                }
+                locationStats[location].defects += parseFloat(row[COLUMNS.QUANTITY]) || 0;
+            });
+
+            const sortedLocations = Object.entries(locationStats)
+                .sort((a, b) => b[1].defects - a[1].defects);
+
+            const ctx = document.getElementById('defectsByLocationChart');
+            if (charts.defectsByLocation) charts.defectsByLocation.destroy();
+
+            charts.defectsByLocation = new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: topProducts.map(item => item[0].substring(0, 25)),
+                    labels: sortedLocations.map(([location]) => location),
                     datasets: [{
-                        label: 'Кількість',
-                        data: topProducts.map(item => item[1]),
-                        backgroundColor: '#ef4444',
-                        borderRadius: 6
+                        label: 'Кількість браку',
+                        data: sortedLocations.map(([, stats]) => stats.defects),
+                        backgroundColor: '#3b82f6'
                     }]
                 },
                 options: {
                     indexAxis: 'y',
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } }
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
                 }
             });
+        }
 
-            // Розподіл по участкам
-            const sectionLosses = {};
-            data.forEach(item => {
-                sectionLosses[item.section] = (sectionLosses[item.section] || 0) + item.defects;
+        function updateDefectsPieChart() {
+            const locationStats = {};
+            
+            filteredData.forEach(row => {
+                const location = row[COLUMNS.LOCATION];
+                if (!location) return;
+                
+                if (!locationStats[location]) {
+                    locationStats[location] = 0;
+                }
+                locationStats[location] += parseFloat(row[COLUMNS.QUANTITY]) || 0;
             });
 
-            if (sectionChart) sectionChart.destroy();
-            sectionChart = new Chart(document.getElementById('sectionChart'), {
+            const colors = [
+                '#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6',
+                '#ec4899', '#14b8a6', '#f97316', '#06b6d4', '#84cc16',
+                '#a855f7', '#eab308', '#22c55e', '#f43f5e', '#6366f1'
+            ];
+
+            const ctx = document.getElementById('defectsPieChart');
+            if (charts.defectsPie) charts.defectsPie.destroy();
+
+            const labels = Object.keys(locationStats);
+            const data = Object.values(locationStats);
+
+            charts.defectsPie = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: Object.keys(sectionLosses),
+                    labels: labels,
                     datasets: [{
-                        data: Object.values(sectionLosses),
-                        backgroundColor: ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#06b6d4']
+                        data: data,
+                        backgroundColor: colors
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
-                }
-            });
-
-            // Рекламації vs Внутрішні
-            const monthComparison = {};
-            data.forEach(item => {
-                const key = item.month || 'Без місяця';
-                if (!monthComparison[key]) {
-                    monthComparison[key] = { defects: 0, internal: 0 };
-                }
-                monthComparison[key].defects += item.defects;
-                monthComparison[key].internal += item.internal;
-            });
-
-            if (comparisonChart) comparisonChart.destroy();
-            comparisonChart = new Chart(document.getElementById('comparisonChart'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(monthComparison),
-                    datasets: [
-                        {
-                            label: 'Рекламації',
-                            data: Object.values(monthComparison).map(item => item.defects),
-                            backgroundColor: '#ef4444',
-                            borderRadius: 4
-                        },
-                        {
-                            label: 'Внутр. зауваження',
-                            data: Object.values(monthComparison).map(item => item.internal),
-                            backgroundColor: '#f97316',
-                            borderRadius: 4
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false
-                }
-            });
-        }
-
-        function updateTable(data) {
-            const tbody = document.getElementById('detailsTableBody');
-            tbody.innerHTML = '';
-
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                let photoCell = '-';
-                
-                if (item.photo && item.photo.trim() && item.photo !== 'undefined') {
-                    let photoUrl = item.photo.trim();
-                    console.log('Photo URL:', photoUrl);
-                    
-                    // Перетворюємо посилання на Google Drive для вбудовування
-                    if (photoUrl.includes('drive.google.com')) {
-                        const fileId = photoUrl.match(/\/d\/([a-zA-Z0-9-_]+)/);
-                        if (fileId && fileId[1]) {
-                            const thumbUrl = `https://drive.google.com/thumbnail?id=${fileId[1]}&sz=w100`;
-                            photoCell = `<a href="${photoUrl}" target="_blank" style="color: #ef4444; text-decoration: none; display: inline-block;">
-                                <img src="${thumbUrl}" style="width: 50px; height: 50px; border-radius: 4px; object-fit: cover;" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2250%22 height=%2250%22%3E%3Crect fill=%22%23e5e7eb%22 width=%2250%22 height=%2250%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-size=%2220%22%3E❌%3C/text%3E%3C/svg%3E'">
-                            </a>`;
-                        }
-                    } else {
-                        photoCell = `<a href="${photoUrl}" target="_blank" class="photo-link">📷</a>`;
+                    plugins: {
+                        legend: { display: false }
                     }
                 }
-                
-                row.innerHTML = `
-                    <td>${item.date}</td>
-                    <td>${item.month}</td>
-                    <td>${item.product}</td>
-                    <td>${item.section}</td>
-                    <td style="text-align: center;">${photoCell}</td>
+            });
+
+            // Створюємо власну легенду
+            const legendContainer = document.getElementById('pieLegend');
+            legendContainer.innerHTML = '';
+            labels.forEach((label, index) => {
+                const legendItem = document.createElement('div');
+                legendItem.className = 'legend-item';
+                legendItem.innerHTML = `
+                    <div class="legend-color" style="background: ${colors[index]}"></div>
+                    <span>${label}</span>
                 `;
-                tbody.appendChild(row);
+                legendContainer.appendChild(legendItem);
             });
         }
 
-        function updateFilterOptions() {
-            const years = [...new Set(allData.map(item => item.yearNum).filter(y => y && y.toString().length === 4))].sort().reverse();
-            const months = [...new Set(allData.map(item => item.month).filter(m => m))];
-            const sections = [...new Set(allData.map(item => item.section))];
-
-            console.log('Years found:', years);
-            console.log('All data sample:', allData.slice(0, 3));
-
-            updateSelect('yearFilter', years.map(y => ({ value: y, label: y })), 'Всі роки');
-            updateSelect('monthFilter', months.map(m => ({ value: m, label: m })), 'Всі періоди');
-            updateSelect('sectionFilter', sections.map(s => ({ value: s, label: s })), 'Всі участки');
-        }
-
-        function updateSelect(selectId, options, placeholder) {
-            const select = document.getElementById(selectId);
-            const currentValue = select.value;
-
-            select.innerHTML = '';
+        function updateDefectsByProductChart() {
+            const productStats = {};
             
-            const allOpt = document.createElement('option');
-            allOpt.value = '';
-            allOpt.textContent = placeholder;
-            select.appendChild(allOpt);
-
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt.value;
-                option.textContent = opt.label;
-                select.appendChild(option);
+            filteredData.forEach(row => {
+                const product = row[COLUMNS.PRODUCT];
+                if (!product) return;
+                
+                if (!productStats[product]) {
+                    productStats[product] = 0;
+                }
+                productStats[product] += parseFloat(row[COLUMNS.QUANTITY]) || 0;
             });
 
-            select.value = currentValue;
-        }
+            const sortedProducts = Object.entries(productStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15); // ТОП-15
 
-        function resetFilters() {
-            document.getElementById('yearFilter').value = '';
-            document.getElementById('monthFilter').value = '';
-            document.getElementById('sectionFilter').value = '';
-            document.getElementById('typeFilter').value = '';
-            updateDashboard();
-        }
+            const ctx = document.getElementById('defectsByProductChart');
+            if (charts.defectsByProduct) charts.defectsByProduct.destroy();
 
-        function updateTime() {
-            const now = new Date();
-            const time = now.toLocaleTimeString('uk-UA');
-            document.getElementById('updateTime').textContent = time;
+            charts.defectsByProduct = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedProducts.map(([product]) => product),
+                    datasets: [{
+                        label: 'Кількість браку',
+                        data: sortedProducts.map(([, count]) => count),
+                        backgroundColor: '#ef4444'
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true }
+                    }
+                }
+            });
         }
     </script>
 </body>
